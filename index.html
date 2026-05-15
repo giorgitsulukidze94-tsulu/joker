@@ -84,6 +84,10 @@
       text-shadow:0 0 16px var(--pink),0 0 28px var(--cyan);
     }
 
+    h2{
+      margin-top:0;
+    }
+
     .sub{
       color:var(--muted);
       font-size:14px;
@@ -217,11 +221,6 @@
       position:relative;
     }
 
-    .player-card.active{
-      border-color:var(--cyan);
-      box-shadow:0 0 20px rgba(0,234,255,.35);
-    }
-
     .player-name{
       color:var(--muted);
       font-size:13px;
@@ -266,16 +265,6 @@
       z-index:2;
     }
 
-    .edit-cell{
-      cursor:pointer;
-      border-radius:10px;
-    }
-
-    .edit-cell:hover{
-      background:rgba(0,234,255,.12);
-      color:var(--cyan);
-    }
-
     .hand-form{
       display:grid;
       gap:10px;
@@ -290,6 +279,7 @@
       border-radius:17px;
       background:rgba(255,255,255,.04);
       border:1px solid rgba(255,255,255,.08);
+      margin-bottom:8px;
     }
 
     .box{
@@ -309,16 +299,13 @@
       box-shadow:0 0 18px rgba(0,234,255,.35);
     }
 
-    .box.disabled{
-      opacity:.35;
-      pointer-events:none;
-    }
-
     .bed{
+      display:inline-block;
+      padding:5px 8px;
       color:#fff;
-      background:linear-gradient(180deg,rgba(255,59,107,.35),rgba(120,0,30,.3));
-      border-color:rgba(255,59,107,.7);
-      border-radius:22px 22px 10px 10px;
+      background:linear-gradient(180deg,rgba(255,59,107,.42),rgba(120,0,30,.36));
+      border:1px solid rgba(255,59,107,.7);
+      border-radius:18px 18px 8px 8px;
       box-shadow:0 0 18px rgba(255,59,107,.35);
       font-weight:900;
     }
@@ -326,11 +313,7 @@
     .premium{
       color:var(--green);
       text-shadow:0 0 14px var(--green);
-    }
-
-    .pulka-premium{
-      border-color:var(--green)!important;
-      box-shadow:inset 0 0 18px rgba(92,255,157,.22);
+      font-weight:900;
     }
 
     .keyboard{
@@ -369,6 +352,7 @@
       color:white;
       font-size:20px;
       font-weight:900;
+      cursor:pointer;
     }
 
     .key.blocked{
@@ -391,6 +375,8 @@
       border-radius:18px;
       box-shadow:0 0 22px rgba(0,234,255,.25);
       display:none;
+      max-width:90%;
+      text-align:center;
     }
 
     @media(max-width:980px){
@@ -437,7 +423,7 @@
         <div><label>მოთამაშე 1</label><input id="p1" value="მოთამაშე 1"></div>
         <div><label>მოთამაშე 2</label><input id="p2" value="მოთამაშე 2"></div>
         <div><label>მოთამაშე 3</label><input id="p3" value="მოთამაშე 3"></div>
-        <div><label>მოთამაშე 4</label><input id="p4" value="მოთამაშე 4"></div>
+        <div><label>მოთამაშე 4 / პირველი დამრიგებელი</label><input id="p4" value="მოთამაშე 4"></div>
 
         <div>
           <label>რეჟიმი</label>
@@ -504,7 +490,7 @@
             <div id="handInputs"></div>
 
             <button class="btn" onclick="saveHand()">ხელის შენახვა</button>
-            <button class="btn secondary" onclick="endGame()">თამაშის დასრულება</button>
+            <button class="btn red" onclick="endGame()">თამაშის დასრულება / ახალი თამაში</button>
           </div>
 
           <div style="height:14px"></div>
@@ -614,6 +600,7 @@ async function startGame(){
 
 async function loadState(){
   const data = await apiGet();
+
   if(data.status !== "success"){
     toast("მონაცემები ვერ ჩაიტვირთა");
     return;
@@ -621,7 +608,7 @@ async function loadState(){
 
   state = data.state;
 
-  if(!state.settings.gameId || state.settings.status === "empty"){
+  if(!state.settings.gameId || state.settings.status !== "active"){
     document.getElementById("setupScreen").classList.remove("hidden");
     document.getElementById("gameScreen").classList.add("hidden");
     return;
@@ -684,7 +671,8 @@ function renderHandInputs(){
 
 function renderInfo(){
   const cards = sequence[currentHand-1] || 1;
-  const dealer = ((currentHand - 1) % 4);
+
+  const dealer = ((currentHand + 2) % 4);
   const speaker = (dealer + 1) % 4;
 
   document.getElementById("cardsNow").innerText = cards;
@@ -719,8 +707,8 @@ function renderHistory(){
 }
 
 function playerCell(r,i){
-  const said = r[11 + i*5];
-  const took = r[12 + i*5];
+  const said = showPass(r[11 + i*5]);
+  const took = showPass(r[12 + i*5]);
   const score = r[14 + i*5];
   const note = String(r[15 + i*5] || "");
 
@@ -751,7 +739,7 @@ function renderKeyboard(){
   for(let n=0;n<=cards;n++){
     const btn=document.createElement("button");
     btn.className="key";
-    btn.innerText=n === 0 ? "0 პასი" : n;
+    btn.innerText = n === 0 ? "-" : n;
 
     if(activeType === "said" && isForbiddenSaid(n)){
       btn.classList.add("blocked");
@@ -783,8 +771,8 @@ function isForbiddenSaid(n){
   for(let i=0;i<4;i++){
     const el=document.getElementById(`said-${i}`);
     if(i === activeIndex) continue;
-    if(el && el.innerText !== ""){
-      sum += Number(el.innerText);
+    if(el && el.dataset.value !== undefined && el.dataset.value !== ""){
+      sum += Number(el.dataset.value);
       filled++;
     }
   }
@@ -793,7 +781,14 @@ function isForbiddenSaid(n){
 }
 
 function pressKey(n){
-  activeBox.innerText=n;
+  if(n === ""){
+    activeBox.innerText = "";
+    activeBox.dataset.value = "";
+  }else{
+    activeBox.dataset.value = n;
+    activeBox.innerText = n === 0 ? "-" : n;
+  }
+
   activeBox.classList.remove("active");
   closeKeyboard();
   updateSaidStatus();
@@ -810,8 +805,8 @@ function updateSaidStatus(){
 
   for(let i=0;i<4;i++){
     const el=document.getElementById(`said-${i}`);
-    if(el && el.innerText !== ""){
-      sum += Number(el.innerText);
+    if(el && el.dataset.value !== undefined && el.dataset.value !== ""){
+      sum += Number(el.dataset.value);
       filled++;
     }
   }
@@ -820,6 +815,7 @@ function updateSaidStatus(){
   document.getElementById("fillNeed").innerText = need > 0 ? need : 0;
 
   const status=document.getElementById("handStatus");
+
   if(filled < 4){
     status.innerText = need > 0 ? `აკლია ${need}` : `წაგლეჯვა ${Math.abs(need)}`;
   }else{
@@ -831,6 +827,7 @@ function updateSaidStatus(){
 
 async function saveHand(){
   const cards = sequence[currentHand-1];
+
   let payload = {
     action:"saveHand",
     handNumber:currentHand
@@ -840,10 +837,13 @@ async function saveHand(){
   let saidTotal=0;
 
   for(let i=0;i<4;i++){
-    const said=document.getElementById(`said-${i}`).innerText;
-    const took=document.getElementById(`took-${i}`).innerText;
+    const saidEl=document.getElementById(`said-${i}`);
+    const tookEl=document.getElementById(`took-${i}`);
 
-    if(said==="" || took===""){
+    const said=saidEl.dataset.value;
+    const took=tookEl.dataset.value;
+
+    if(said === undefined || said === "" || took === undefined || took === ""){
       toast("შეავსე ყველა მოთამაშის თქვა/აიღო");
       return;
     }
@@ -879,7 +879,7 @@ async function saveHand(){
 }
 
 async function endGame(){
-  if(!confirm("დავასრულოთ თამაში?")) return;
+  if(!confirm("დავასრულოთ თამაში და დავიწყოთ ახალი?")) return;
 
   const data = await apiPost({action:"endGame"});
 
@@ -888,8 +888,12 @@ async function endGame(){
     return;
   }
 
-  toast("თამაში დასრულდა 🏆");
+  toast("თამაში დასრულდა და განულდა 🏆");
   await loadState();
+}
+
+function showPass(v){
+  return Number(v) === 0 ? "-" : v;
 }
 
 function val(id){
