@@ -1,650 +1,902 @@
 <!DOCTYPE html>
 <html lang="ka">
 <head>
-    <meta charset="UTF-8">
-    <!-- მობილურის ეკრანის ზუმის (Zoom) სრული ბლოკირება -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Joker Neon Scoreboard</title>
-    <style>
-        :root {
-            --neon-cyan: #00f3ff;
-            --neon-magenta: #ff007f;
-            --neon-purple: #9d00ff;
-            --glass-bg: rgba(255, 255, 255, 0.03);
-            --glass-border: rgba(255, 255, 255, 0.08);
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Joker Scoreboard</title>
 
-        /* ბაზისური სტილები და ეკრანის გადიდების პრევენცია */
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            user-select: none;
-            -webkit-user-select: none;
-            touch-action: manipulation;
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-        }
+  <style>
+    :root{
+      --bg:#050816;
+      --card:rgba(255,255,255,.06);
+      --line:rgba(255,255,255,.13);
+      --cyan:#00eaff;
+      --pink:#ff2bd6;
+      --purple:#8b5cff;
+      --gold:#ffd166;
+      --green:#5cff9d;
+      --red:#ff3b6b;
+      --text:#fff;
+      --muted:#aeb4d8;
+    }
 
-        body {
-            background: radial-gradient(circle at center, #1a0b2e 0%, #0a0514 100%);
-            color: #ffffff;
-            min-height: 100vh;
-            overflow-x: hidden;
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-            padding: 15px;
-        }
+    *{
+      box-sizing:border-box;
+      -webkit-tap-highlight-color:transparent;
+      user-select:none;
+      -webkit-user-select:none;
+      touch-action:manipulation;
+    }
 
-        .container {
-            width: 100%;
-            max-width: 600px;
-            margin-top: 10px;
-        }
+    html,body{
+      margin:0;
+      min-height:100%;
+      background:
+        radial-gradient(circle at 20% 10%, rgba(255,43,214,.23), transparent 28%),
+        radial-gradient(circle at 80% 10%, rgba(0,234,255,.20), transparent 30%),
+        radial-gradient(circle at 50% 90%, rgba(139,92,255,.18), transparent 35%),
+        var(--bg);
+      color:var(--text);
+      font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      overflow-x:hidden;
+    }
 
-        /* Glassmorphism კონტეინერები */
-        .glass-card {
-            background: var(--glass-bg);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border);
-            border-radius: 24px;
-            padding: 25px;
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-            margin-bottom: 20px;
-            position: relative;
-            overflow: hidden;
-        }
+    button,input,select{
+      font:inherit;
+    }
 
-        .glass-card::before {
-            content: '';
-            position: absolute;
-            top: 0; left: -100%;
-            width: 50%; height: 100%;
-            background: linear-gradient(to right, transparent, rgba(255,255,255,0.05), transparent);
-            transform: skewX(-25deg);
-            transition: 0.75s;
-        }
-        .glass-card:hover::before { left: 125%; }
+    .app{
+      width:100%;
+      max-width:1320px;
+      margin:auto;
+      padding:18px;
+    }
 
-        h2 {
-            font-size: 1.6rem;
-            text-align: center;
-            margin-bottom: 25px;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            color: #fff;
-            text-shadow: 0 0 10px var(--neon-cyan), 0 0 20px var(--neon-purple);
-        }
+    .top{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:14px;
+      margin-bottom:18px;
+    }
 
-        /* ფორმის ელემენტები */
-        .form-group {
-            margin-bottom: 18px;
-        }
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-size: 0.85rem;
-            color: #b5a9df;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        .form-control {
-            width: 100%;
-            background: rgba(0, 0, 0, 0.4);
-            border: 1px solid var(--glass-border);
-            border-radius: 12px;
-            padding: 12px 15px;
-            color: white;
-            font-size: 1rem;
-            outline: none;
-            transition: all 0.3s ease;
-        }
-        .form-control:focus {
-            border-color: var(--neon-cyan);
-            box-shadow: 0 0 12px rgba(0, 243, 255, 0.3);
-        }
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:14px;
+    }
 
-        /* Toggle გადამრთველი პარა რეჟიმისთვის */
-        .toggle-container {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            background: rgba(0,0,0,0.2);
-            padding: 12px 15px;
-            border-radius: 14px;
-            border: 1px solid var(--glass-border);
-            margin-bottom: 20px;
-        }
-        .switch {
-            position: relative;
-            display: inline-block;
-            width: 50px; height: 26px;
-        }
-        .switch input { opacity: 0; width: 0; height: 0; }
-        .slider {
-            position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
-            background-color: rgba(255,255,255,0.1); transition: .4s; border-radius: 34px;
-            border: 1px solid var(--glass-border);
-        }
-        .slider:before {
-            position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px;
-            background-color: white; transition: .4s; border-radius: 50%;
-            box-shadow: 0 0 8px var(--neon-magenta);
-        }
-        input:checked + .slider { background-color: rgba(157, 0, 255, 0.3); border-color: var(--neon-purple); }
-        input:checked + .slider:before { transform: translateX(24px); background-color: var(--neon-cyan); box-shadow: 0 0 8px var(--neon-cyan); }
+    .logo{
+      width:62px;
+      height:62px;
+      border-radius:20px;
+      display:grid;
+      place-items:center;
+      background:linear-gradient(135deg,var(--purple),var(--pink));
+      box-shadow:0 0 30px rgba(255,43,214,.45);
+      font-size:34px;
+    }
 
-        /* Liquid მნათობი ღილაკები */
-        .btn-liquid {
-            position: relative;
-            width: 100%;
-            padding: 15px;
-            background: linear-gradient(45deg, var(--neon-purple), var(--neon-magenta));
-            border: none;
-            border-radius: 14px;
-            color: white;
-            font-size: 1.1rem;
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            cursor: pointer;
-            overflow: hidden;
-            box-shadow: 0 0 15px rgba(157, 0, 255, 0.4);
-            transition: all 0.3s ease;
-        }
-        .btn-liquid:active {
-            transform: scale(0.98);
-            box-shadow: 0 0 5px rgba(157, 0, 255, 0.2);
-        }
-        /* თხევადი ტალღის ეფექტი შიგნით */
-        .btn-liquid::after {
-            content: '';
-            position: absolute;
-            top: 50%; left: 50%;
-            width: 150%; height: 150%;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 40%;
-            transform: translate(-50%, -50%) scale(0);
-            transition: transform 0.6s ease-out;
-        }
-        .btn-liquid:hover::after {
-            transform: translate(-50%, -50%) scale(1);
-        }
+    h1{
+      margin:0;
+      font-size:34px;
+      letter-spacing:3px;
+      text-shadow:0 0 16px var(--pink),0 0 28px var(--cyan);
+    }
 
-        /* სათამაშო ინტერფეისის ბლოკები */
-        .hidden { display: none !important; }
-        
-        .game-header {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        .current-hand-title {
-            font-size: 1.2rem;
-            color: var(--neon-cyan);
-            text-shadow: 0 0 8px rgba(0, 243, 255, 0.5);
-            font-weight: bold;
-        }
+    .sub{
+      color:var(--muted);
+      font-size:14px;
+      margin-top:2px;
+    }
 
-        /* მოთამაშეების რიგები ქულების შეყვანისას */
-        .player-input-row {
-            display: grid;
-            grid-template-columns: 2fr 1fr 1fr;
-            gap: 10px;
-            align-items: center;
-            margin-bottom: 12px;
-            background: rgba(255,255,255,0.02);
-            padding: 8px 12px;
-            border-radius: 14px;
-            border: 1px solid rgba(255,255,255,0.03);
-        }
-        .player-name-label {
-            font-weight: 600;
-            font-size: 1rem;
-            color: #e2d9ff;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        .score-box {
-            background: rgba(0,0,0,0.3);
-            border: 1px solid var(--glass-border);
-            border-radius: 10px;
-            padding: 10px;
-            text-align: center;
-            font-size: 1.1rem;
-            font-weight: bold;
-            color: #fff;
-            cursor: pointer;
-            min-height: 44px;
-            transition: all 0.2s ease;
-        }
-        .score-box.active-input {
-            border-color: var(--neon-cyan);
-            box-shadow: 0 0 10px rgba(0, 243, 255, 0.4);
-            background: rgba(0, 243, 255, 0.05);
-        }
-        .score-box:empty::before {
-            content: '-';
-            color: rgba(255,255,255,0.3);
-        }
+    .glass{
+      background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.035));
+      border:1px solid var(--line);
+      box-shadow:0 20px 60px rgba(0,0,0,.38), inset 0 0 28px rgba(255,255,255,.03);
+      backdrop-filter:blur(18px);
+      -webkit-backdrop-filter:blur(18px);
+      border-radius:26px;
+    }
 
-        /* შუშისებრი ციფრული კლავიატურა */
-        .custom-keyboard {
-            position: fixed;
-            bottom: 0; left: 0; right: 0;
-            background: rgba(13, 6, 26, 0.85);
-            backdrop-filter: blur(25px);
-            -webkit-backdrop-filter: blur(25px);
-            border-top: 1px solid var(--glass-border);
-            border-radius: 24px 24px 0 0;
-            padding: 20px 15px calc(20px + env(safe-area-inset-bottom));
-            box-shadow: 0 -10px 30px rgba(0,0,0,0.5);
-            transform: translateY(100%);
-            transition: transform 0.3s cubic-bezier(0.1, 0.76, 0.55, 0.94);
-            z-index: 999;
-        }
-        .custom-keyboard.open { transform: translateY(0); }
-        .keyboard-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
-            max-width: 500px;
-            margin: 0 auto;
-        }
-        .key-btn {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid var(--glass-border);
-            border-radius: 12px;
-            padding: 15px;
-            color: white;
-            font-size: 1.2rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.1s ease;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        .key-btn:active {
-            background: var(--neon-cyan);
-            color: #000;
-            box-shadow: 0 0 15px var(--neon-cyan);
-            transform: scale(0.95);
-        }
-        .key-btn.special {
-            background: rgba(255, 0, 127, 0.15);
-            border-color: rgba(255, 0, 127, 0.3);
-            color: #ff66b2;
-        }
+    .panel{
+      padding:18px;
+      margin-bottom:16px;
+    }
 
-        /* რეალურ დროში ქულების ჯამური დაფა */
-        .live-board {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 8px;
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        .live-player-card {
-            background: rgba(255,255,255,0.02);
-            border: 1px solid var(--glass-border);
-            border-radius: 12px;
-            padding: 10px 5px;
-        }
-        .live-name { font-size: 0.85rem; color: #b5a9df; margin-bottom: 5px; text-overflow: ellipsis; overflow: hidden; }
-        .live-score { font-size: 1.2rem; font-weight: bold; color: var(--neon-cyan); text-shadow: 0 0 5px rgba(0,243,255,0.3); }
+    .grid{
+      display:grid;
+      gap:14px;
+    }
 
-        /* მინი ისტორიის ცხრილი */
-        .history-wrapper {
-            max-height: 200px;
-            overflow-y: auto;
-            margin-top: 15px;
-            border-radius: 12px;
-            background: rgba(0,0,0,0.2);
-            border: 1px solid var(--glass-border);
-        }
-        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; text-align: center; }
-        th { background: rgba(157, 0, 255, 0.1); color: #b5a9df; padding: 8px; font-weight: 600; position: sticky; top: 0; }
-        td { padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.03); color: #ddd; }
-        
-        /* ლოადერი აპს სკრიპტთან კავშირისას */
-        .loader {
-            display: inline-block; width: 20px; height: 20px;
-            border: 3px solid rgba(255,255,255,0.1); border-radius: 50%;
-            border-top-color: var(--neon-cyan); animation: spin 1s ease-in-out infinite;
-            vertical-align: middle; margin-right: 8px;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
-    </style>
+    .setup-grid{
+      grid-template-columns:repeat(4,1fr);
+    }
+
+    label{
+      display:block;
+      color:var(--muted);
+      font-size:13px;
+      margin-bottom:7px;
+    }
+
+    input,select{
+      width:100%;
+      border:1px solid var(--line);
+      background:rgba(0,0,0,.28);
+      color:white;
+      border-radius:15px;
+      padding:13px 14px;
+      outline:none;
+      box-shadow:inset 0 0 20px rgba(0,0,0,.25);
+    }
+
+    input:focus,select:focus{
+      border-color:var(--cyan);
+      box-shadow:0 0 18px rgba(0,234,255,.28);
+    }
+
+    .btn{
+      border:0;
+      color:white;
+      cursor:pointer;
+      border-radius:18px;
+      padding:14px 18px;
+      font-weight:800;
+      letter-spacing:.5px;
+      background:linear-gradient(135deg,var(--cyan),var(--purple),var(--pink));
+      box-shadow:0 0 24px rgba(0,234,255,.35);
+      transition:.16s;
+      position:relative;
+      overflow:hidden;
+    }
+
+    .btn:active{
+      transform:scale(.97);
+    }
+
+    .btn.secondary{
+      background:rgba(255,255,255,.07);
+      border:1px solid var(--line);
+      box-shadow:none;
+    }
+
+    .btn.red{
+      background:linear-gradient(135deg,#ff3b6b,#9d003f);
+      box-shadow:0 0 24px rgba(255,59,107,.35);
+    }
+
+    .hidden{
+      display:none!important;
+    }
+
+    .game-layout{
+      display:grid;
+      grid-template-columns:280px 1fr 280px;
+      gap:16px;
+      align-items:start;
+    }
+
+    .stat-card{
+      padding:16px;
+      border-radius:20px;
+      background:rgba(0,0,0,.22);
+      border:1px solid var(--line);
+      margin-bottom:12px;
+    }
+
+    .big-number{
+      font-size:56px;
+      font-weight:900;
+      color:var(--cyan);
+      text-shadow:0 0 22px var(--cyan);
+      text-align:center;
+    }
+
+    .status-text{
+      text-align:center;
+      font-size:22px;
+      font-weight:900;
+      color:var(--gold);
+      text-shadow:0 0 18px rgba(255,209,102,.5);
+    }
+
+    .players{
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:10px;
+      margin-bottom:14px;
+    }
+
+    .player-card{
+      border:1px solid var(--line);
+      background:rgba(0,0,0,.25);
+      border-radius:18px;
+      padding:12px;
+      text-align:center;
+      position:relative;
+    }
+
+    .player-card.active{
+      border-color:var(--cyan);
+      box-shadow:0 0 20px rgba(0,234,255,.35);
+    }
+
+    .player-name{
+      color:var(--muted);
+      font-size:13px;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+    }
+
+    .score{
+      margin-top:6px;
+      font-size:27px;
+      font-weight:900;
+    }
+
+    .table-wrap{
+      overflow:auto;
+      border-radius:20px;
+      border:1px solid var(--line);
+      background:rgba(0,0,0,.22);
+      max-height:480px;
+    }
+
+    table{
+      width:100%;
+      border-collapse:collapse;
+      min-width:820px;
+    }
+
+    th,td{
+      padding:10px 8px;
+      border-bottom:1px solid rgba(255,255,255,.08);
+      border-right:1px solid rgba(255,255,255,.06);
+      text-align:center;
+      font-size:14px;
+    }
+
+    th{
+      position:sticky;
+      top:0;
+      background:rgba(15,12,38,.96);
+      color:var(--muted);
+      z-index:2;
+    }
+
+    .edit-cell{
+      cursor:pointer;
+      border-radius:10px;
+    }
+
+    .edit-cell:hover{
+      background:rgba(0,234,255,.12);
+      color:var(--cyan);
+    }
+
+    .hand-form{
+      display:grid;
+      gap:10px;
+    }
+
+    .input-row{
+      display:grid;
+      grid-template-columns:1.3fr 1fr 1fr;
+      gap:8px;
+      align-items:center;
+      padding:9px;
+      border-radius:17px;
+      background:rgba(255,255,255,.04);
+      border:1px solid rgba(255,255,255,.08);
+    }
+
+    .box{
+      min-height:46px;
+      display:grid;
+      place-items:center;
+      border-radius:15px;
+      background:rgba(0,0,0,.3);
+      border:1px solid var(--line);
+      font-size:20px;
+      font-weight:900;
+      cursor:pointer;
+    }
+
+    .box.active{
+      border-color:var(--cyan);
+      box-shadow:0 0 18px rgba(0,234,255,.35);
+    }
+
+    .box.disabled{
+      opacity:.35;
+      pointer-events:none;
+    }
+
+    .bed{
+      color:#fff;
+      background:linear-gradient(180deg,rgba(255,59,107,.35),rgba(120,0,30,.3));
+      border-color:rgba(255,59,107,.7);
+      border-radius:22px 22px 10px 10px;
+      box-shadow:0 0 18px rgba(255,59,107,.35);
+      font-weight:900;
+    }
+
+    .premium{
+      color:var(--green);
+      text-shadow:0 0 14px var(--green);
+    }
+
+    .pulka-premium{
+      border-color:var(--green)!important;
+      box-shadow:inset 0 0 18px rgba(92,255,157,.22);
+    }
+
+    .keyboard{
+      position:fixed;
+      left:0;
+      right:0;
+      bottom:0;
+      z-index:30;
+      padding:14px;
+      transform:translateY(105%);
+      transition:.22s;
+      background:rgba(5,8,22,.84);
+      backdrop-filter:blur(22px);
+      -webkit-backdrop-filter:blur(22px);
+      border-top:1px solid var(--line);
+      border-radius:26px 26px 0 0;
+    }
+
+    .keyboard.open{
+      transform:translateY(0);
+    }
+
+    .keys{
+      max-width:620px;
+      margin:auto;
+      display:grid;
+      grid-template-columns:repeat(5,1fr);
+      gap:10px;
+    }
+
+    .key{
+      padding:16px 8px;
+      border-radius:18px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.08);
+      color:white;
+      font-size:20px;
+      font-weight:900;
+    }
+
+    .key.blocked{
+      opacity:.25;
+      background:rgba(255,0,0,.15);
+      text-decoration:line-through;
+      pointer-events:none;
+    }
+
+    .toast{
+      position:fixed;
+      top:18px;
+      left:50%;
+      transform:translateX(-50%);
+      z-index:50;
+      background:rgba(0,0,0,.72);
+      border:1px solid var(--line);
+      color:white;
+      padding:12px 18px;
+      border-radius:18px;
+      box-shadow:0 0 22px rgba(0,234,255,.25);
+      display:none;
+    }
+
+    @media(max-width:980px){
+      .app{padding:12px;}
+      .top{align-items:flex-start;}
+      h1{font-size:26px;}
+      .logo{width:52px;height:52px;}
+      .setup-grid{grid-template-columns:1fr 1fr;}
+      .game-layout{grid-template-columns:1fr;}
+      .players{grid-template-columns:repeat(2,1fr);}
+      .big-number{font-size:44px;}
+    }
+
+    @media(max-width:560px){
+      .setup-grid{grid-template-columns:1fr;}
+      .panel{padding:14px;}
+      .players{grid-template-columns:repeat(2,1fr);}
+      .input-row{grid-template-columns:1.1fr .8fr .8fr;}
+      .keys{grid-template-columns:repeat(4,1fr);}
+      th,td{font-size:13px;padding:8px 6px;}
+    }
+  </style>
 </head>
+
 <body>
+  <div class="toast" id="toast"></div>
 
-<div class="container">
-    
-    <!-- ეკრანი 1: კონფიგურაცია -->
-    <div id="setup-screen" class="glass-card">
-        <h2>Joker Setup</h2>
-        <div class="form-group">
-            <label>მოთამაშე 1</label>
-            <input type="text" id="p1-name" class="form-control" value="მოთამაშე 1">
+  <div class="app">
+    <div class="top">
+      <div class="brand">
+        <div class="logo">🃏</div>
+        <div>
+          <h1>JOKER</h1>
+          <div class="sub">ანგარიშის დასათვლელი პლატფორმა</div>
         </div>
-        <div class="form-group">
-            <label>მოთამაშე 2</label>
-            <input type="text" id="p2-name" class="form-control" value="მოთამაშე 2">
-        </div>
-        <div class="form-group">
-            <label>მოთამაშე 3</label>
-            <input type="text" id="p3-name" class="form-control" value="მოთამაშე 3">
-        </div>
-        <div class="form-group">
-            <label>მოთამაშე 4</label>
-            <input type="text" id="p4-name" class="form-control" value="მოთამაშე 4">
-        </div>
-
-        <div class="toggle-container">
-            <span style="font-size: 0.9rem; color: #e2d9ff; font-weight: 600;">წყვილებში თამაში (პარა)</span>
-            <label class="switch">
-                <input type="checkbox" id="game-mode">
-                <span class="slider"></span>
-            </label>
-        </div>
-
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 25px;">
-            <div class="form-group">
-                <label>სტანდარტული ხიშტი</label>
-                <input type="number" id="normal-khishti" class="form-control" value="200">
-            </div>
-            <div class="form-group">
-                <label>9-იანების ხიშტი</label>
-                <input type="number" id="nine-khishti" class="form-control" value="500">
-            </div>
-        </div>
-
-        <button class="btn-liquid" onclick="startGame()">დაიწყე თამაში</button>
+      </div>
+      <button class="btn secondary" onclick="loadState()">განახლება</button>
     </div>
 
-    <!-- ეკრანი 2: ძირითადი თამაშის პანელი -->
-    <div id="game-screen" class="glass-card hidden">
-        <div class="game-header">
-            <div id="hand-indicator" class="current-hand-title">ხელი 1 / დარიგება: 1 კარტი</div>
+    <section id="setupScreen" class="glass panel">
+      <h2>თამაშის პარამეტრები</h2>
+
+      <div class="grid setup-grid">
+        <div><label>მოთამაშე 1</label><input id="p1" value="მოთამაშე 1"></div>
+        <div><label>მოთამაშე 2</label><input id="p2" value="მოთამაშე 2"></div>
+        <div><label>მოთამაშე 3</label><input id="p3" value="მოთამაშე 3"></div>
+        <div><label>მოთამაშე 4</label><input id="p4" value="მოთამაშე 4"></div>
+
+        <div>
+          <label>რეჟიმი</label>
+          <select id="mode">
+            <option>ინდივიდუალური</option>
+            <option>პარა</option>
+          </select>
         </div>
 
-        <!-- ლაივ ქულების დაფა თავზე -->
-        <div class="live-board">
-            <div class="live-player-card"><div id="l-p1-n" class="live-name">-</div><div id="l-p1-s" class="live-score">0</div></div>
-            <div class="live-player-card"><div id="l-p2-n" class="live-name">-</div><div id="l-p2-s" class="live-score">0</div></div>
-            <div class="live-player-card"><div id="l-p3-n" class="live-name">-</div><div id="l-p3-s" class="live-score">0</div></div>
-            <div class="live-player-card"><div id="l-p4-n" class="live-name">-</div><div id="l-p4-s" class="live-score">0</div></div>
+        <div>
+          <label>ჩვეულებრივი ხიშტი</label>
+          <input id="normalKhishti" type="number" value="200">
         </div>
 
-        <!-- ქულების შეყვანის ბლოკი -->
-        <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 10px; margin-bottom: 10px; padding: 0 12px; font-size: 0.8rem; color: #b5a9df; text-transform: uppercase;">
-            <div>მოთამაშე</div><div>თქვა</div><div>აიღო</div>
+        <div>
+          <label>9-იანების ხიშტი</label>
+          <input id="nineKhishti" type="number" value="500">
         </div>
 
-        <div id="input-rows-container">
-            <!-- აქ დინამიკურად ჩაჯდება 4 მოთამაშის სტრიქონი -->
+        <div>
+          <label>ხიშტის რეჟიმი</label>
+          <select id="khishtiMode">
+            <option value="fixed">ჩაწერილი თანხით</option>
+            <option value="dynamic">X — კარტი × 100</option>
+          </select>
         </div>
+      </div>
 
-        <div style="margin-top: 20px; display: grid; grid-template-columns: 1fr; gap: 10px;">
-            <button id="submit-hand-btn" class="btn-liquid" onclick="saveHand()">ხელის შენახვა</button>
-            <button class="btn-liquid" style="background: rgba(255,255,255,0.05); box-shadow: none; font-size: 0.9rem; margin-top: 5px;" onclick="endGame()">თამაშის დასრულება და არქივი</button>
-        </div>
+      <div style="margin-top:18px;">
+        <button class="btn" onclick="startGame()">დაიწყე თამაში</button>
+      </div>
+    </section>
 
-        <!-- მინი ისტორია ცხრილი ქვემოთ -->
-        <div class="history-wrapper">
-            <table id="history-table">
-                <thead>
-                    <tr><th>ხ#</th><th>კ</th><th id="th-p1">-</th><th id="th-p2">-</th><th id="th-p3">-</th><th id="th-p4">-</th></tr>
-                </thead>
-                <tbody id="history-body"></tbody>
+    <section id="gameScreen" class="hidden">
+      <div class="game-layout">
+
+        <aside class="glass panel">
+          <div class="stat-card">
+            <div class="sub">მიმდინარე დარიგება</div>
+            <div class="big-number" id="cardsNow">1</div>
+            <div style="text-align:center;color:var(--muted)">კარტი</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="sub">შევსებამდე აკლია</div>
+            <div class="big-number" id="fillNeed" style="color:var(--gold)">0</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="sub">სტატუსი</div>
+            <div class="status-text" id="handStatus">---</div>
+          </div>
+        </aside>
+
+        <main class="glass panel">
+          <div class="players" id="scoreCards"></div>
+
+          <div class="hand-form">
+            <div class="input-row" style="color:var(--muted);font-weight:800;">
+              <div>მოთამაშე</div>
+              <div>თქვა</div>
+              <div>აიღო</div>
+            </div>
+            <div id="handInputs"></div>
+
+            <button class="btn" onclick="saveHand()">ხელის შენახვა</button>
+            <button class="btn secondary" onclick="endGame()">თამაშის დასრულება</button>
+          </div>
+
+          <div style="height:14px"></div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>პულკა</th>
+                  <th>კარტი</th>
+                  <th id="h1">P1</th>
+                  <th id="h2">P2</th>
+                  <th id="h3">P3</th>
+                  <th id="h4">P4</th>
+                  <th>შედეგი</th>
+                </tr>
+              </thead>
+              <tbody id="history"></tbody>
             </table>
-        </div>
-    </div>
+          </div>
+        </main>
 
-</div>
+        <aside class="glass panel">
+          <div class="stat-card">
+            <div class="sub">ხელის ნომერი</div>
+            <div class="big-number" id="handNo">1</div>
+          </div>
 
-<!-- ციფრული კლავიატურა -->
-<div id="custom-keyboard" class="custom-keyboard">
-    <div class="keyboard-grid">
-        <button class="key-btn" onclick="pressKey(0)">0 (პასი)</button>
-        <button class="key-btn" onclick="pressKey(1)">1</button>
-        <button class="key-btn" onclick="pressKey(2)">2</button>
-        <button class="key-btn" onclick="pressKey(3)">3</button>
-        <button class="key-btn" onclick="pressKey(4)">4</button>
-        <button class="key-btn" onclick="pressKey(5)">5</button>
-        <button class="key-btn" onclick="pressKey(6)">6</button>
-        <button class="key-btn" onclick="pressKey(7)">7</button>
-        <button class="key-btn" onclick="pressKey(8)">8</button>
-        <button class="key-btn" onclick="pressKey(9)">9</button>
-        <button class="key-btn special" onclick="pressKey('C')">C</button>
-        <button class="key-btn special" style="background: var(--neon-purple); color: #fff;" onclick="closeKeyboard()">OK</button>
-    </div>
-</div>
+          <div class="stat-card">
+            <div class="sub">ვინც არიგებს</div>
+            <div class="status-text" id="dealerName">---</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="sub">პირველი ამბობს</div>
+            <div class="status-text" id="speakerName">---</div>
+          </div>
+        </aside>
+
+      </div>
+    </section>
+  </div>
+
+  <div class="keyboard" id="keyboard">
+    <div class="keys" id="keys"></div>
+  </div>
 
 <script>
-    // შენი Google Apps Script Web App URL
-    const API_URL = "https://script.google.com/macros/s/AKfycbyjS0CJTjCMWlgBV4nb4ViR9WrMz1QmLLsNXoZNnD_dMvis5UPEi9zE4YJNR8B2Zn2q/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbyjS0CJTjCMWlgBV4nb4ViR9WrMz1QmLLsNXoZNnD_dMvis5UPEi9zE4YJNR8B2Zn2q/exec";
 
-    let currentHand = 1;
-    let players = [];
-    let cumulativeScores = [0, 0, 0, 0];
-    let activeInputId = null;
+const sequence = [1,2,3,4,5,6,7,8,9,9,9,9,8,7,6,5,4,3,2,1,9,9,9,9];
 
-    // ჯოკერის კლასიკური დარიგებების თანმიმდევრობა (1-დან 8-მდე, ოთხი 9-იანი, 8-დან 1-მდე)
-    const handsSequence = [1,2,3,4,5,6,7,8,9,9,9,9,8,7,6,5,4,3,2,1];
+let state = null;
+let players = [];
+let totals = [0,0,0,0];
+let currentHand = 1;
+let activeBox = null;
+let activeType = null;
+let activeIndex = null;
 
-    function getCardsCount(handId) {
-        return handsSequence[(handId - 1) % handsSequence.length];
+document.addEventListener("gesturestart", e => e.preventDefault());
+document.addEventListener("dblclick", e => e.preventDefault(), {passive:false});
+
+function toast(msg){
+  const t=document.getElementById("toast");
+  t.innerText=msg;
+  t.style.display="block";
+  clearTimeout(window.__toast);
+  window.__toast=setTimeout(()=>t.style.display="none",2600);
+}
+
+async function apiPost(payload){
+  const res = await fetch(API_URL,{
+    method:"POST",
+    body:JSON.stringify(payload)
+  });
+  return await res.json();
+}
+
+async function apiGet(){
+  const res = await fetch(API_URL);
+  return await res.json();
+}
+
+async function startGame(){
+  const data = await apiPost({
+    action:"startGame",
+    p1:val("p1"),
+    p2:val("p2"),
+    p3:val("p3"),
+    p4:val("p4"),
+    mode:val("mode"),
+    normalKhishti:val("normalKhishti"),
+    nineKhishti:val("nineKhishti"),
+    khishtiMode:val("khishtiMode")
+  });
+
+  if(data.status !== "success"){
+    toast(data.error || data.message || "შეცდომა");
+    return;
+  }
+
+  toast("თამაში დაიწყო ✅");
+  await loadState();
+}
+
+async function loadState(){
+  const data = await apiGet();
+  if(data.status !== "success"){
+    toast("მონაცემები ვერ ჩაიტვირთა");
+    return;
+  }
+
+  state = data.state;
+
+  if(!state.settings.gameId || state.settings.status === "empty"){
+    document.getElementById("setupScreen").classList.remove("hidden");
+    document.getElementById("gameScreen").classList.add("hidden");
+    return;
+  }
+
+  document.getElementById("setupScreen").classList.add("hidden");
+  document.getElementById("gameScreen").classList.remove("hidden");
+
+  players = state.players.map(r => r[1]);
+  totals = state.players.map(r => Number(r[3] || 0));
+  currentHand = state.hands.length + 1;
+
+  if(currentHand > sequence.length){
+    currentHand = sequence.length;
+    toast("ყველა ხელი დასრულებულია");
+  }
+
+  renderAll();
+}
+
+function renderAll(){
+  renderScoreCards();
+  renderHandInputs();
+  renderHistory();
+  renderInfo();
+}
+
+function renderScoreCards(){
+  const box=document.getElementById("scoreCards");
+  box.innerHTML="";
+
+  players.forEach((p,i)=>{
+    const div=document.createElement("div");
+    div.className="player-card";
+    div.innerHTML=`
+      <div class="player-name">${p}</div>
+      <div class="score">${totals[i] || 0}</div>
+    `;
+    box.appendChild(div);
+
+    document.getElementById("h"+(i+1)).innerText=p;
+  });
+}
+
+function renderHandInputs(){
+  const wrap=document.getElementById("handInputs");
+  wrap.innerHTML="";
+
+  players.forEach((p,i)=>{
+    const row=document.createElement("div");
+    row.className="input-row";
+    row.innerHTML=`
+      <div>${p}</div>
+      <div class="box" id="said-${i}" onclick="openKeyboard('said',${i})"></div>
+      <div class="box" id="took-${i}" onclick="openKeyboard('took',${i})"></div>
+    `;
+    wrap.appendChild(row);
+  });
+}
+
+function renderInfo(){
+  const cards = sequence[currentHand-1] || 1;
+  const dealer = ((currentHand - 1) % 4);
+  const speaker = (dealer + 1) % 4;
+
+  document.getElementById("cardsNow").innerText = cards;
+  document.getElementById("handNo").innerText = currentHand;
+  document.getElementById("dealerName").innerText = players[dealer] || "---";
+  document.getElementById("speakerName").innerText = players[speaker] || "---";
+
+  updateSaidStatus();
+}
+
+function renderHistory(){
+  const tbody=document.getElementById("history");
+  tbody.innerHTML="";
+
+  state.hands.slice().reverse().forEach(r=>{
+    const tr=document.createElement("tr");
+
+    const cells = [
+      r[1],
+      r[3],
+      r[5],
+      playerCell(r,0),
+      playerCell(r,1),
+      playerCell(r,2),
+      playerCell(r,3),
+      `${r[9]} ${r[10]}`
+    ];
+
+    tr.innerHTML = cells.map(c=>`<td>${c}</td>`).join("");
+    tbody.appendChild(tr);
+  });
+}
+
+function playerCell(r,i){
+  const said = r[11 + i*5];
+  const took = r[12 + i*5];
+  const score = r[14 + i*5];
+  const note = String(r[15 + i*5] || "");
+
+  let cls = "";
+  if(note.includes("ხიშტი")) cls="bed";
+  if(note.includes("პრემია")) cls="premium";
+
+  return `<span class="${cls}">${said}/${took} = ${score}<br><small>${note}</small></span>`;
+}
+
+function openKeyboard(type,index){
+  activeType=type;
+  activeIndex=index;
+  activeBox=document.getElementById(`${type}-${index}`);
+
+  document.querySelectorAll(".box").forEach(b=>b.classList.remove("active"));
+  activeBox.classList.add("active");
+
+  renderKeyboard();
+  document.getElementById("keyboard").classList.add("open");
+}
+
+function renderKeyboard(){
+  const cards = sequence[currentHand-1];
+  const keys=document.getElementById("keys");
+  keys.innerHTML="";
+
+  for(let n=0;n<=cards;n++){
+    const btn=document.createElement("button");
+    btn.className="key";
+    btn.innerText=n === 0 ? "0 პასი" : n;
+
+    if(activeType === "said" && isForbiddenSaid(n)){
+      btn.classList.add("blocked");
+    }else{
+      btn.onclick=()=>pressKey(n);
     }
 
-    // თამაშის დაწყება
-    async function startGame() {
-        players = [
-            document.getElementById('p1-name').value.trim() || 'მოთამაშე 1',
-            document.getElementById('p2-name').value.trim() || 'მოთამაშე 2',
-            document.getElementById('p3-name').value.trim() || 'მოთამაშე 3',
-            document.getElementById('p4-name').value.trim() || 'მოთამაშე 4'
-        ];
-        
-        const isPara = document.getElementById('game-mode').checked;
-        const normalKhishti = document.getElementById('normal-khishti').value;
-        const nineKhishti = document.getElementById('nine-khishti').value;
+    keys.appendChild(btn);
+  }
 
-        setLoading('submit-hand-btn', true, "ახლავე...");
+  const clear=document.createElement("button");
+  clear.className="key";
+  clear.innerText="C";
+  clear.onclick=()=>pressKey("");
+  keys.appendChild(clear);
 
-        try {
-            const response = await fetch(API_URL, {
-                method: 'POST',
-                body: JSON.stringify({
-                    action: 'startGame',
-                    mode: isPara ? 'პარა' : 'ინდივიდუალური',
-                    normalKhishti: normalKhishti,
-                    nineKhishti: nineKhishti,
-                    p1: players[0], p2: players[1], p3: players[2], p4: players[3]
-                })
-            });
-            
-            const resData = await response.json();
-            if(resData.status === 'success') {
-                setupGameUI();
-            }
-        } catch (e) {
-            alert('კავშირის შეცდომა ბაზასთან. სცადე ხელახლა.');
-        } finally {
-            setLoading('submit-hand-btn', false, "ხელის შენახვა");
-        }
+  const ok=document.createElement("button");
+  ok.className="key";
+  ok.innerText="OK";
+  ok.onclick=closeKeyboard;
+  keys.appendChild(ok);
+}
+
+function isForbiddenSaid(n){
+  const cards = sequence[currentHand-1];
+  let sum = 0;
+  let filled = 0;
+
+  for(let i=0;i<4;i++){
+    const el=document.getElementById(`said-${i}`);
+    if(i === activeIndex) continue;
+    if(el && el.innerText !== ""){
+      sum += Number(el.innerText);
+      filled++;
+    }
+  }
+
+  return filled === 3 && sum + Number(n) === cards;
+}
+
+function pressKey(n){
+  activeBox.innerText=n;
+  activeBox.classList.remove("active");
+  closeKeyboard();
+  updateSaidStatus();
+}
+
+function closeKeyboard(){
+  document.getElementById("keyboard").classList.remove("open");
+}
+
+function updateSaidStatus(){
+  const cards = sequence[currentHand-1];
+  let sum=0;
+  let filled=0;
+
+  for(let i=0;i<4;i++){
+    const el=document.getElementById(`said-${i}`);
+    if(el && el.innerText !== ""){
+      sum += Number(el.innerText);
+      filled++;
+    }
+  }
+
+  const need = cards - sum;
+  document.getElementById("fillNeed").innerText = need > 0 ? need : 0;
+
+  const status=document.getElementById("handStatus");
+  if(filled < 4){
+    status.innerText = need > 0 ? `აკლია ${need}` : `წაგლეჯვა ${Math.abs(need)}`;
+  }else{
+    if(sum > cards) status.innerText = `წაგლეჯვა ${sum-cards}`;
+    else if(sum < cards) status.innerText = `შეტენვა ${cards-sum}`;
+    else status.innerText = "აკრძალულია";
+  }
+}
+
+async function saveHand(){
+  const cards = sequence[currentHand-1];
+  let payload = {
+    action:"saveHand",
+    handNumber:currentHand
+  };
+
+  let tookTotal=0;
+  let saidTotal=0;
+
+  for(let i=0;i<4;i++){
+    const said=document.getElementById(`said-${i}`).innerText;
+    const took=document.getElementById(`took-${i}`).innerText;
+
+    if(said==="" || took===""){
+      toast("შეავსე ყველა მოთამაშის თქვა/აიღო");
+      return;
     }
 
-    function setupGameUI() {
-        document.getElementById('setup-screen').classList.add('hidden');
-        document.getElementById('game-screen').classList.remove('hidden');
+    saidTotal += Number(said);
+    tookTotal += Number(took);
 
-        // ლაივ დაფის სახელების განახლება
-        for(let i=0; i<4; i++) {
-            document.getElementById(`l-p${i+1}-n`).innerText = players[i];
-            document.getElementById(`th-p${i+1}`).innerText = players[i];
-        }
-        
-        updateHandIndicator();
-        generateInputRows();
-    }
+    payload[`player${i+1}`] = {
+      said:Number(said),
+      took:Number(took)
+    };
+  }
 
-    function updateHandIndicator() {
-        const cards = getCardsCount(currentHand);
-        document.getElementById('hand-indicator').innerText = `ხელი ${currentHand} / დარიგება: ${cards} კარტი`;
-    }
+  if(saidTotal === cards){
+    toast("ნათქვამების ჯამი დარიგებულს არ უნდა უდრიდეს");
+    return;
+  }
 
-    function generateInputRows() {
-        const container = document.getElementById('input-rows-container');
-        container.innerHTML = '';
-        
-        for(let i=0; i<4; i++) {
-            const row = document.createElement('div');
-            row.className = 'player-input-row';
-            row.innerHTML = `
-                <div class="player-name-label">${players[i]}</div>
-                <div class="score-box" id="said-${i}" onclick="openKeyboard('said-${i}')"></div>
-                <div class="score-box" id="took-${i}" onclick="openKeyboard('took-${i}')"></div>
-            `;
-            container.appendChild(row);
-        }
-    }
+  if(tookTotal !== cards){
+    toast(`აღებული ჯამში უნდა იყოს ${cards}`);
+    return;
+  }
 
-    // კლავიატურის მართვა
-    function openKeyboard(id) {
-        if(activeInputId) {
-            document.getElementById(activeInputId).classList.remove('active-input');
-        }
-        activeInputId = id;
-        document.getElementById(id).classList.add('active-input');
-        document.getElementById('custom-keyboard').classList.add('open');
-    }
+  const data = await apiPost(payload);
 
-    function closeKeyboard() {
-        if(activeInputId) {
-            document.getElementById(activeInputId).classList.remove('active-input');
-            activeInputId = null;
-        }
-        document.getElementById('custom-keyboard').classList.remove('open');
-    }
+  if(data.status !== "success"){
+    toast(data.error || data.message || "შენახვის შეცდომა");
+    return;
+  }
 
-    function pressKey(key) {
-        if(!activeInputId) return;
-        const target = document.getElementById(activeInputId);
-        if(key === 'C') {
-            target.innerText = '';
-        } else {
-            target.innerText = key; // ვინაიდან ჯოკერში მაქსიმუმ 9 კარტია, ერთნიშნა ციფრი საკმარისია
-            closeKeyboard();
-        }
-    }
+  toast("ხელი შენახულია ✅");
+  await loadState();
+}
 
-    // ხელის შედეგების შენახვა და გუგლ შიტში გაგზავნა
-    async function saveHand() {
-        const cardsCount = getCardsCount(currentHand);
-        let totalTook = 0;
-        let payload = {
-            action: 'saveHand',
-            handNumber: currentHand,
-            cardsCount: cardsCount
-        };
+async function endGame(){
+  if(!confirm("დავასრულოთ თამაში?")) return;
 
-        // მონაცემების ვალიდაცია
-        for(let i=0; i<4; i++) {
-            const saidVal = document.getElementById(`said-${i}`).innerText;
-            const tookVal = document.getElementById(`took-${i}`).innerText;
+  const data = await apiPost({action:"endGame"});
 
-            if(saidVal === '' || tookVal === '') {
-                alert('გთხოვთ შეავსოთ ყველა მოთამაშის ნათქვამი და წაღებული!');
-                return;
-            }
+  if(data.status !== "success"){
+    toast(data.error || data.message || "შეცდომა");
+    return;
+  }
 
-            totalTook += Number(tookVal);
-            payload[`player${i+1}`] = { said: Number(saidVal), took: Number(tookVal) };
-        }
+  toast("თამაში დასრულდა 🏆");
+  await loadState();
+}
 
-        // ვალიდაცია: წაღებულების ჯამი უნდა უდრიდეს დარიგებულს
-        if(totalTook !== cardsCount) {
-            alert(`შეცდომა! წაღებული კარტების ჯამი (${totalTook}) უნდა უდრიდეს დარიგებული კარტების რაოდენობას (${cardsCount})!`);
-            return;
-        }
+function val(id){
+  return document.getElementById(id).value.trim();
+}
 
-        setLoading('submit-hand-btn', true, "ქულები ითვლება...");
-
-        try {
-            const response = await fetch(API_URL, {
-                method: 'POST',
-                body: JSON.stringify(payload)
-            });
-            const resData = await response.json();
-
-            if(resData.status === 'success') {
-                // ქულების განახლება ინტერფეისში
-                addHistoryRow(currentHand, cardsCount, payload, resData.scores);
-                
-                for(let i=0; i<4; i++) {
-                    cumulativeScores[i] += resData.scores[i];
-                    document.getElementById(`l-p${i+1}-s`).innerText = cumulativeScores[i];
-                }
-
-                // შემდეგ ხელზე გადასვლა
-                currentHand++;
-                updateHandIndicator();
-                generateInputRows();
-            }
-        } catch(e) {
-            alert('მონაცემების შენახვისას მოხდა შეცდომა. სცადეთ ხელახლა.');
-        } finally {
-            setLoading('submit-hand-btn', false, "ხელის შენახვა");
-        }
-    }
-
-    function addHistoryRow(handNum, cards, payload, calculatedScores) {
-        const tbody = document.getElementById('history-body');
-        const tr = document.createElement('tr');
-        
-        tr.innerHTML = `
-            <td>${handNum}</td>
-            <td style="color: var(--neon-cyan);">${cards}</td>
-            <td>${payload.player1.said}/${payload.player1.took} (${calculatedScores[0]})</td>
-            <td>${payload.player2.said}/${payload.player2.took} (${calculatedScores[1]})</td>
-            <td>${payload.player3.said}/${payload.player3.took} (${calculatedScores[2]})</td>
-            <td>${payload.player4.said}/${payload.player4.took} (${calculatedScores[3]})</td>
-        `;
-        tbody.insertBefore(tr, tbody.firstChild); // უახლესი ხელი ჩნდება ზემოდან
-    }
-
-    // თამაშის დასრულება და ცხრილის დაარქივება
-    async function endGame() {
-        if(!confirm('დარწმუნებული ხართ, რომ გსურთ მიმდინარე თამაშის დასრულება და მისი არქივში შენახვა?')) return;
-
-        try {
-            const response = await fetch(API_URL, {
-                method: 'POST',
-                body: JSON.stringify({ action: 'endGame' })
-            });
-            const resData = await response.json();
-            if(resData.status === 'success') {
-                alert('თამაში წარმატებით დაარქივდა!');
-                location.reload(); // გვერდის გადატვირთვა ახალი თამაშისთვის
-            }
-        } catch(e) {
-            alert('არქივაციისას მოხდა შეცდომა.');
-        }
-    }
-
-    function setLoading(btnId, isLoading, text) {
-        const btn = document.getElementById(btnId);
-        if(isLoading) {
-            btn.disabled = true;
-            btn.innerHTML = `<span class="loader"></span> ${text}`;
-        } else {
-            btn.disabled = false;
-            btn.innerHTML = text;
-        }
-    }
+loadState();
 </script>
 </body>
 </html>
